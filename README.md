@@ -1,4 +1,4 @@
-Specification for Gaia/OpenPGP project (Draft)
+Specification for Gaia Email/OpenPGP project (Draft)
 ============
 
 ## Goals of the project
