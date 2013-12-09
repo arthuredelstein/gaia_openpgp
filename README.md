@@ -1,4 +1,4 @@
-Specification for Gaia/OpenPGP project
+Specification for Gaia/OpenPGP project (Draft)
 ============
 
 ## Goals of the project
@@ -8,6 +8,8 @@ As [Gaia's Email app](https://wiki.mozilla.org/Gaia/Email), is currently impleme
 The initial version will provide "traditional" PGP/Inline formatting for encryption, with PGP/MIME as an optional extra.
 
 For initial prototyping of the user interface, we plan to use the OpenPGP.js library. However, the license of OpenPGP.js is LGPL, and [Mozilla prefers to avoid the use of LGPL libraries in Gaia](https://groups.google.com/forum/#!topic/mozilla.dev.gaia/kWBOY1WzBrw). Therefore another javascript library (such as an OpenPGP implementation using the WebCrypto API) will need to be used in any version intended for deployment.
+
+Cryptographic operations should run in a separate "PGP" service process, which can be responsible providing error messages and password prompts. That will allow other apps to take advantage of the PGP functionality.
 
 ### Key management
 
@@ -23,9 +25,7 @@ When the user is composing a message, the Gaia Email app should tailor its defau
 
 Email messages with multiple recipients should be automatically encrypted, provided there is a public key available for each email address. If the user has provided multiple recipients, where some recipients have no associate public key, then the user should be prompted with a choice to either (1) Cancel Send or (2) Send unencrypted.
 
-Next, the user should be prompted to sign the message by entering a password associated with one of the local private keys designated for signing. By default, a password should be required for signing each message as it is sent. An alternative option could be offered to the user to allow the automatic signing of messages for a limited duration (say, 1 hour).
-
-A notification should indicate to the user that encryption and/or signing is taking place. Once signing and encryption is finished, the message should be sent and sending should be reported to the user in the Gaia Email app's standard manner. The Sent message should be saved, encrypted, in the Gaia Email app's "Sent" folder. If the user enters that folder and attempts to open the message, then the user will be asked for a password required to decrypt the message.
+Next, the user should be prompted to sign the message by entering a password associated with one of the local private keys designated for signing. A notification should indicate to the user that encryption and/or signing is taking place. Once signing and encryption is finished, the message should be sent and sending should be reported to the user in the Gaia Email app's standard manner. The Sent message should be saved, in ciphertext only, in the Gaia Email app's "Sent" folder. If the user enters that folder and attempts to open the message, then the user will be asked for a password required to decrypt the message.
 
 If the User chooses to Reply to a previously encrypted message, and a public key for the Sender is available then the Compose interface should appear as usual with the original message quoted. The Reply message and the quoted message will then be encrypted before sending. If, on the other hand, a public key is not available, then the User should be prompted with a warning indicating "Public Key for replying to Sender is not available" and the choice to Continue or Cancel. If the user chooses to Continue, the original message should not be quoted to avoid sending it in plaintext.
 
@@ -33,10 +33,16 @@ Similarly, if the User chooses to Forward a decrypted message, a Warning should 
 
 ### Decryption and authentication
 
-When the user has received an encrypted message it will be decorated with a "Lock" icon to indicate that the message is encrypted. If the user chooses to open that message for reading, then a password prompt should appear, indicating the private key required for decryption. If the user enters the correct password, then the message should be decrypted if possible, or a Warning indicating decryption failure should be displayed to the user.
+When the User has received an encrypted message it will be decorated with a "Lock" icon to indicate that the message is encrypted. If the user chooses to open that message for reading, then a password prompt should appear, indicating the private key required for decryption. If the User enters the correct password, then the message should be decrypted if possible, or a Warning indicating decryption failure should be displayed to the user. Email messages that were received encrypted should be locally cached in ciphertext only, for better security.
 
 By default, any decrypted messages encoded in HTML should NOT display images or otherwise cause the phone to connect to the web to retrieve further resources. Prevention of automated resource retrieval will help to prevent timing attacks.
 
-Signed messages (either cleartext or decrypted) should be automatically verified whenever possible. The Email app will search the contacts for the appropriate public key, and authenticate the message. If the message is correctly authenticated, a green "Check mark" icon should appear next to the sender's name and/or email address (in the "To" field). If authentication fails then a red "X" icon should appear instead, and the user should be prompted with a Warning, saying "Message Authentication Failed -- this email message may be have been altered or faked by a third party."
+Signed messages (either cleartext or decrypted) should be automatically verified whenever possible. The Email app will search the contacts for the appropriate public key, and authenticate the message. If the message is correctly authenticated, a green "Check mark" icon should appear next to the Sender's name and/or email address (in the "To" field). If authentication fails then a red "X" icon should appear instead, and the User should be prompted with a Warning, saying "Message Authentication Failed -- this email message may be have been altered or faked by a third party."
+
+### Password policies
+
+When the Mail app is entered, if the User requests the decryption of an incoming or cached message, a password prompt should appear. To avoid prompting the user too often, the entered password should remain in memory to allow promptless decryption of a certain number of messages (say, 20) or until the Mail app has exited. Then the password should be erased from memory and the user re-prompted for the password to decrypt the next message.
+
+
 
 
