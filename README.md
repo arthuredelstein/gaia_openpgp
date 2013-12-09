@@ -11,6 +11,8 @@ For initial prototyping of the user interface, we plan to use the OpenPGP.js lib
 
 Cryptographic operations should run in a separate "PGP" service process, which can be responsible providing error messages and password prompts. That will allow other apps to take advantage of the PGP functionality.
 
+It's crucial that any deployed PGP implementation uses "cryptographic blinding" to avoid timing attacks, and should be as performant as possible, subject to security requirements.
+
 ### Key management
 
 PGP support will require local storage of public and private keys. Public keys should be associated with designated email addresses, while private keys should be locally encrypted and password-protected. Separate "signing" and "decryption" private keys should be maintained.
